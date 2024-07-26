@@ -1,0 +1,12 @@
+numpy<2.0.0
+torch
+pytorch-tcn
+h5py
+librosa
+nnAudio
+torchaudio
+soundfile
+deeprhythm
+tqdm
+librosa
+mir_eval

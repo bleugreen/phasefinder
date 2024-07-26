@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "phasefinder"
+version = "0.0.1"
+authors = [
+  { name="bleugreen", email="bleugreendesign@gmail.com" },
+]
+description = "rotational beat estimation model"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy<2.0.0",
+    "torch",
+   "pytorch-tcn",
+    "h5py",
+    "librosa",
+    "nnAudio",
+    "torchaudio",
+    "soundfile",
+    "deeprhythm",
+    "tqdm",
+    "librosa",
+    "mir_eval"
+]
+
+[project.urls]
+Homepage = "https://github.com/bleugreen/phasefinder"
+Issues = "https://github.com/bleugreen/phasefinder/issues"

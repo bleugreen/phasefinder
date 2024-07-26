@@ -1,0 +1,17 @@
+*.m4a
+*.wav
+*.flac
+*.hdf5
+__pycache__
+models/
+.venv
+runs/
+*.pt
+test_songs/
+images/
+*.ipynb
+*.h5
+*.png
+*.gif
+*.json
+test_env/
