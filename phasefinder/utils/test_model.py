@@ -1,5 +1,5 @@
 import torch
-from phasefinder.model.model import PhasefinderModel
+from phasefinder.model import PhasefinderModel
 from phasefinder.val import test_model_f_measure
 import argparse
 

@@ -12,6 +12,9 @@ def get_weights(filename="phasefinder-0.1-noattn.pt", quiet=False):
         os.makedirs(model_dir, exist_ok=True)
     model_path = os.path.join(model_dir, filename)
 
+    if os.path.exists(filename):
+        return filename
+
     # Check if the model weights already exist
     if not os.path.isfile(model_path):
         print("Downloading model weights...")

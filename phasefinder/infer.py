@@ -5,7 +5,7 @@ from postproc.hmm import hmm_beat_estimation
 from postproc.cleaner import clean_beats
 from audio.log_filter import create_log_filter, apply_log_filter
 import librosa
-from model.model import PhasefinderModel
+from phasefinder.model.model_attn import PhasefinderModel
 from nnAudio.features import STFT
 import torchaudio
 import numpy as np

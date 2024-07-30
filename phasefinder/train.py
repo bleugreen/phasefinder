@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch import nn, optim
 from model.model_noattn import PhasefinderModelNoattn
-from model.model import PhasefinderModel
+from model.model_attn import PhasefinderModel
 from dataset import BeatDataset
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter 
