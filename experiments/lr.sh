@@ -2,7 +2,7 @@
 
 source .venv/bin/activate
 
-lr_values=(2e-4 5e-4 1e-3 2e-3)
+lr_values=(1e-5 1e-4 1e-3)
 
 for lr in "${lr_values[@]}"
 do

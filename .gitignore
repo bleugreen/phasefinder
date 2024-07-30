@@ -6,8 +6,8 @@ __pycache__
 models/
 .venv
 runs/
-!phasefinder*.pt
 *.pt
+!phasefinder*.pt
 test_songs/
 images/
 *.ipynb

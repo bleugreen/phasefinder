@@ -12,7 +12,7 @@ def _clean_beat_times(beat_times):
     if len(beat_times) < 2:
         return beat_times
     intervals = [beat_times[i+1] - beat_times[i] for i in range(len(beat_times) - 1)]
-    interval_mode = _find_interval_mode(intervals, threshold=0.001)
+    interval_mode = find_interval_mode(intervals, threshold=0.001)
     cleaned_beats = [beat_times[0]]
     i = 1
     while i < len(beat_times) - 1:
@@ -23,7 +23,7 @@ def _clean_beat_times(beat_times):
     return cleaned_beats if cleaned_beats else beat_times  # Return original if cleaned is empty
 
 def _correct_beat_sequence(beat_times):
-    median_interval = _find_interval_mode([beat_times[i] - beat_times[i-1] for i in range(1, len(beat_times))])
+    median_interval = find_interval_mode([beat_times[i] - beat_times[i-1] for i in range(1, len(beat_times))])
     adjusted_beats = [beat_times[0]]
 
     for i in range(1, len(beat_times)):
@@ -44,7 +44,7 @@ def _correct_beat_sequence(beat_times):
             adjusted_beats.append(beat_times[i]) 
     return adjusted_beats
 
-def _find_interval_mode(intervals, threshold=None):
+def find_interval_mode(intervals, threshold=None):
     thresh = threshold if threshold else 0.001
     rounded_intervals = [round(interval / thresh) * thresh for interval in intervals]
     interval_counts = defaultdict(int)
@@ -65,7 +65,7 @@ def nudge(beat_times, interval_ratio):
     list: Nudged beat times.
     """
     
-    interval_mode = _find_interval_mode([beat_times[i] - beat_times[i-1] for i in range(1, len(beat_times))])
+    interval_mode = find_interval_mode([beat_times[i] - beat_times[i-1] for i in range(1, len(beat_times))])
     nudge_amount = interval_ratio * interval_mode
     
     nudged_beats = [beat_time + nudge_amount for beat_time in beat_times]

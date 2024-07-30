@@ -1,7 +1,7 @@
 from torch.utils.data import Dataset
 import h5py
 import torch
-from utils import generate_blurred_one_hots_wrapped
+from utils.one_hots import generate_blurred_one_hots_wrapped
 
 
 class BeatDataset(Dataset):

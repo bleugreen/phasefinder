@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 from torch import nn, optim
+from model.model_noattn import PhasefinderModelNoattn
 from model.model import PhasefinderModel
 from dataset import BeatDataset
 from tqdm import tqdm
@@ -9,6 +10,8 @@ from val import test_model_f_measure
 from torch.optim.lr_scheduler import LambdaLR
 import argparse
 import json
+import os
+import torch.nn.functional as F
 
 parser = argparse.ArgumentParser(description='Train PhasefinderModel')
 parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
@@ -19,12 +22,13 @@ parser.add_argument('--num_classes', type=int, default=360, help='Number of clas
 parser.add_argument('--num_tcn_layers', type=int, default=16, help='Number of TCN layers')
 parser.add_argument('--dilation', type=int, default=8, help='Dilation')
 parser.add_argument('--start_epoch', type=int, default=0, help='Start Epoch')
-parser.add_argument('--use_attention', type=bool, default=True, help='Use attention mechanism')
+parser.add_argument('--use_attention', action='store_true', help='Use attention mechanism')
 parser.add_argument('--load_weights', type=str, default=None, help='Path to model weights file')
 parser.add_argument('--data_path', type=str, default='stft_db_b_phase.hdf5', help='Path to dataset')
 parser.add_argument('--max_epochs', type=int, default=20, help='Max epochs to train')
 args = parser.parse_args()
 
+print(args.use_attention)
 LR = args.lr
 PHASE_WIDTH = args.phase_width
 START_EPOCH = args.start_epoch
@@ -36,16 +40,23 @@ def warmup_lambda(epoch):
         return (ep + 1) / 5
     return 1.0
 
-data_path = args.data_path
-
-model = PhasefinderModel(
+if args.use_attention:
+    model = PhasefinderModel(
     num_bands=81, 
     num_channels=args.num_channels, 
     num_classes=args.num_classes, 
     num_tcn_layers=args.num_tcn_layers, 
     dilation=args.dilation, 
-    use_attention=args.use_attention
 )
+else:
+    model = PhasefinderModelNoattn(
+        num_bands=81, 
+        num_channels=args.num_channels, 
+        num_classes=args.num_classes, 
+        num_tcn_layers=args.num_tcn_layers, 
+        dilation=args.dilation, 
+    )
+
 if(args.load_weights):
     model.load_state_dict(torch.load(args.load_weights))
 
@@ -57,7 +68,7 @@ writer = SummaryWriter(f'runs/{model_root}')
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.5, patience=3)
 
 def train_one_epoch(epoch):
-    train_dataset = BeatDataset(data_path, 'train', mode='beat', items=['stft', 'phase'], phase_width=PHASE_WIDTH)
+    train_dataset = BeatDataset(args.data_path, 'train', mode='beat', items=['stft', 'phase'], phase_width=PHASE_WIDTH)
     train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
     model.train()
     running_loss = 0.0
@@ -67,9 +78,8 @@ def train_one_epoch(epoch):
         stft = stft.cuda()
         beat_phase = beat_phase.cuda()
         
-        downbeat_phase_pred = model(stft)
-        loss = criterion(downbeat_phase_pred.unsqueeze(0), beat_phase)
-        
+        beat_phase_pred = model(stft)
+        loss = criterion(beat_phase_pred.unsqueeze(0), beat_phase)
         loss.backward()
         
         optimizer.step()
@@ -82,7 +92,7 @@ def train_one_epoch(epoch):
     return running_loss / len(train_loader)
 
 def validate(epoch):
-    val_dataset = BeatDataset(data_path, 'val', mode='beat', items=['stft', 'phase'], phase_width=PHASE_WIDTH)
+    val_dataset = BeatDataset(args.data_path, 'val', mode='beat', items=['stft', 'phase'], phase_width=PHASE_WIDTH)
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
     model.eval()
     val_loss = 0.0
@@ -91,6 +101,7 @@ def validate(epoch):
             stft = stft.cuda()
             beat_phase = beat_phase.cuda()
             beat_phase_pred = model(stft)
+            
             loss = criterion(beat_phase_pred.unsqueeze(0), beat_phase)
             val_loss += loss.item()
     val_loss /= len(val_loader)
@@ -99,7 +110,7 @@ def validate(epoch):
     return val_loss
 
 def test(epoch):
-    overall_f_measure, overall_cmlt, overall_amlt = test_model_f_measure(model, data_path)
+    overall_f_measure, overall_cmlt, overall_amlt = test_model_f_measure(model, args.data_path)
     writer.add_scalar('F-Measure/Val', overall_f_measure, epoch)
     writer.add_scalar('Accuracy/CMLt', overall_cmlt, epoch)
     writer.add_scalar('Accuracy/AMLt', overall_amlt, epoch)
@@ -112,15 +123,19 @@ best_model_path = ''
 epochs_no_improve = 0
 max_epochs = args.max_epochs
 
-# Initialize results dictionary
-results = {
-    "epochs": [],
-    "train_loss": [],
-    "val_loss": [],
-    "f_measure": [],
-    "cmlt": [],
-    "amlt": []
-}
+results_file_path = f'{model_root}_results.json'
+if os.path.exists(results_file_path):
+    with open(results_file_path, 'r') as f:
+        results = json.load(f)
+else:
+    results = {
+        "epochs": [],
+        "train_loss": [],
+        "val_loss": [],
+        "f_measure": [],
+        "cmlt": [],
+        "amlt": []
+    }
 
 if __name__ == '__main__':
     for epoch in range(START_EPOCH, max_epochs):
@@ -142,12 +157,21 @@ if __name__ == '__main__':
         
         warmup_scheduler.step()
         scheduler.step(val_loss)
+        
+        save_model = False
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             epochs_no_improve = 0
-            best_model_path = f'{model_root}_epoch_{epoch}_loss_{val_loss:.4f}_f_{f_measure:.3f}_cmlt_{cmlt:.3f}_amlt_{amlt:.3f}.pt'
+            save_model = True
+        if f_measure > best_f_measure:
+            best_f_measure = f_measure
+            save_model = True
+        
+        if save_model:
+            best_model_path = f'{model_root}_f_{f_measure:.3f}_epoch_{epoch}_loss_{val_loss:.4f}.pt'
             torch.save(model.state_dict(), best_model_path)
-        else:
+        
+        if not save_model:
             epochs_no_improve += 1
             if epochs_no_improve == 50:
                 print("Early stopping due to no improvement in validation loss.")
