@@ -1,17 +1,17 @@
 import torch
 from torch.utils.data import DataLoader
 from torch import nn, optim
-from model.model_noattn import PhasefinderModelNoattn
-from model.model_attn import PhasefinderModelAttn
 from dataset import BeatDataset
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter 
-from val import test_model_f_measure
 from torch.optim.lr_scheduler import LambdaLR
 import argparse
 import json
 import os
-import torch.nn.functional as F
+
+from phasefinder.val import test_model_f_measure
+from phasefinder.model.model_noattn import PhasefinderModelNoattn
+from phasefinder.model.model_attn import PhasefinderModelAttn
 
 parser = argparse.ArgumentParser(description='Train PhasefinderModel')
 parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')

@@ -1,9 +1,9 @@
-import torch
 import torch.nn as nn
-from model.feature1d import FeatureExtraction
-from model.decoder import BeatPhaseDecoder
-from model.attention import AttentionModule
 from pytorch_tcn import TCN
+
+from phasefinder.model.feature1d import FeatureExtraction
+from phasefinder.model.decoder import BeatPhaseDecoder
+from phasefinder.model.attention import AttentionModule
 
 
 class PhasefinderModelAttn(nn.Module):

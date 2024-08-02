@@ -1,8 +1,8 @@
 import torch.nn as nn
-from model.feature1d import FeatureExtraction
-from model.decoder import BeatPhaseDecoder
 from pytorch_tcn import TCN
 
+from phasefinder.model.feature1d import FeatureExtraction
+from phasefinder.model.decoder import BeatPhaseDecoder
 
 class PhasefinderModelNoattn(nn.Module):
     def __init__(self, num_bands=81, num_channels=36, num_classes=360, 

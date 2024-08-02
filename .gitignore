@@ -15,4 +15,4 @@ images/
 *.png
 *.gif
 *.json
-test_env/
+.testenv/

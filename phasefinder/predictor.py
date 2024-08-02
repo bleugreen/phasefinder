@@ -6,11 +6,11 @@ from deeprhythm import DeepRhythmPredictor
 import numpy as np
 import soundfile as sf
 
-from model import PhasefinderModelAttn, PhasefinderModelNoattn
-from utils import get_weights, get_device
-from audio.log_filter import create_log_filter, apply_log_filter
-from postproc.hmm import hmm_beat_estimation
-from postproc.cleaner import clean_beats
+from phasefinder.model import PhasefinderModelAttn, PhasefinderModelNoattn
+from phasefinder.utils import get_weights, get_device
+from phasefinder.audio.log_filter import create_log_filter, apply_log_filter
+from phasefinder.postproc.hmm import hmm_beat_estimation
+from phasefinder.postproc.cleaner import clean_beats
 
 N_FFT = 2048
 HOP = 512

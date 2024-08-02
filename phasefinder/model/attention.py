@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
-from model.pos_encoding import PositionalEncoding
+from phasefinder.model.pos_encoding import PositionalEncoding
 
 class AttentionModule(nn.Module):
     def __init__(self, input_dim, num_heads=4, dropout=0.1):

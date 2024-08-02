@@ -1,14 +1,14 @@
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from dataset import BeatDataset
-from postproc.hmm import hmm_beat_estimation
-from postproc.cleaner import clean_beats
 import librosa
 import os
 import mir_eval
 import numpy as np
 
+from phasefinder.dataset import BeatDataset
+from phasefinder.postproc.hmm import hmm_beat_estimation
+from phasefinder.postproc.cleaner import clean_beats
 
 def test_model_f_measure(model, data_path, device='cuda'):
     dataset = BeatDataset(data_path, 'test', mode='beat', items=['stft', 'time', 'bpm'], device=device)

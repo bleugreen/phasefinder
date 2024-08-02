@@ -4,7 +4,8 @@ import numpy as np
 import soundfile as sf
 import argparse
 import json
-from predictor import Phasefinder
+
+from phasefinder.predictor import Phasefinder
 
 if __name__ == '__main__':
     pf = Phasefinder()
