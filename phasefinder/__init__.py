@@ -1,4 +1,4 @@
-from predictor import Phasefinder
+from .predictor import Phasefinder
 
 def version_info():
     return {
