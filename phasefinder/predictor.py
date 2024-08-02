@@ -38,7 +38,7 @@ class Phasefinder:
         else:
             self.model = PhasefinderModelNoattn()
         
-        self.model.load_state_dict(torch.load(self.model_path, map_location=torch.device(self.device)))
+        self.model.load_state_dict(torch.load(self.model_path, map_location=torch.device(self.device), weights_only=True))
         self.model = self.model.to(self.device)
         self.model.eval()
         self.bpm_model = DeepRhythmPredictor('deeprhythm-0.7.pth', device=self.device, quiet=self.quiet)
