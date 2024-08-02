@@ -1,12 +1,12 @@
 import torch
-from phasefinder.model import PhasefinderModel
-from phasefinder.val import test_model_f_measure
+from model import PhasefinderModelNoattn
+from val import test_model_f_measure
 import argparse
 
 def main(modelname):
-    datapath = 'stft_db_b_phase_cleaned.h5'
+    datapath = '../stft_db_b_phase_cleaned.h5'
 
-    beat_model = PhasefinderModel().cuda()
+    beat_model = PhasefinderModelNoattn().cuda()
     beat_model.load_state_dict(torch.load(modelname, map_location=torch.device('cuda')))
     beat_model.eval()
 

@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch import nn, optim
 from model.model_noattn import PhasefinderModelNoattn
-from model.model_attn import PhasefinderModel
+from model.model_attn import PhasefinderModelAttn
 from dataset import BeatDataset
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter 
@@ -41,7 +41,7 @@ def warmup_lambda(epoch):
     return 1.0
 
 if args.use_attention:
-    model = PhasefinderModel(
+    model = PhasefinderModelAttn(
     num_bands=81, 
     num_channels=args.num_channels, 
     num_classes=args.num_classes, 
@@ -173,7 +173,7 @@ if __name__ == '__main__':
         
         if not save_model:
             epochs_no_improve += 1
-            if epochs_no_improve == 50:
+            if epochs_no_improve == 15:
                 print("Early stopping due to no improvement in validation loss.")
                 break
     writer.close()

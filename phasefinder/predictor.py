@@ -6,19 +6,18 @@ from deeprhythm import DeepRhythmPredictor
 import numpy as np
 import soundfile as sf
 
-from phasefinder.model import PhasefinderModel, PhasefinderModelNoattn
-from phasefinder.utils import get_weights, get_device
-from phasefinder.audio.log_filter import create_log_filter, apply_log_filter
-from phasefinder.postproc.hmm import hmm_beat_estimation
-from phasefinder.postproc.cleaner import clean_beats
-
+from model import PhasefinderModelAttn, PhasefinderModelNoattn
+from utils import get_weights, get_device
+from audio.log_filter import create_log_filter, apply_log_filter
+from postproc.hmm import hmm_beat_estimation
+from postproc.cleaner import clean_beats
 
 N_FFT = 2048
 HOP = 512
 SAMPLE_RATE = 22050
 
 class Phasefinder:
-    def __init__(self, modelname='phasefinder-0.1-noattn.pt', device=None, quiet=False, attention=False) -> None:
+    def __init__(self, modelname='phasefinder-0.1.pt', device=None, quiet=False, attention=False) -> None:
         if device:
             self.device = device
         else:
@@ -35,7 +34,7 @@ class Phasefinder:
 
     def load_model(self):
         if self.attention:
-            self.model = PhasefinderModel()
+            self.model = PhasefinderModelAttn()
         else:
             self.model = PhasefinderModelNoattn()
         
@@ -44,7 +43,8 @@ class Phasefinder:
         self.model.eval()
         self.bpm_model = DeepRhythmPredictor('deeprhythm-0.7.pth', device=self.device, quiet=self.quiet)
 
-        self.filter_matrix = create_log_filter(int((N_FFT/2)+1), 81, device=self.device)
+        fft_bins = int((N_FFT/2)+1)
+        self.filter_matrix = create_log_filter(fft_bins, 81, device=self.device)
         self.stft = STFT(
             n_fft=N_FFT,
             hop_length=HOP,
@@ -55,7 +55,7 @@ class Phasefinder:
     
     def predict(self, audio_path, include_bpm=False, clean=True):
         bpm, confidence = self.bpm_model.predict(audio_path, include_confidence=True)
-        audio, _ = librosa.load(audio_path, sr=22050)
+        audio, _ = librosa.load(audio_path, sr=SAMPLE_RATE)
         audio_tens = torch.tensor(audio).unsqueeze(0).unsqueeze(1).to(self.device)
         
         stft_batch = torchaudio.functional.amplitude_to_DB(torch.abs(self.stft(audio_tens)), multiplier=10., amin=0.00001, db_multiplier=1)
@@ -66,13 +66,13 @@ class Phasefinder:
         phase_preds = self.model(song_spec)
         
         frame_rate = 22050. / 512
-        res = hmm_beat_estimation(phase_preds[0, :, :].squeeze(0).to(self.device), bpm, confidence, frame_rate, device=self.device)
+        res = hmm_beat_estimation(phase_preds[0, :, :].squeeze(0).to(self.device), bpm, bpm_confidence=confidence, frame_rate=frame_rate, device=self.device)
         bt = torch.tensor(res)
         
         pred_beat_label_onset = torch.abs(bt[1:] - bt[:-1])
         beat_frames = torch.tensor([i for i, x in enumerate(pred_beat_label_onset) if x > 300])
         
-        pred_beat_times = beat_frames * 512 / 22050
+        pred_beat_times = beat_frames * HOP / SAMPLE_RATE
         if clean:
             pred_beat_times = clean_beats(pred_beat_times.numpy())
 
@@ -81,14 +81,13 @@ class Phasefinder:
         else:
             return pred_beat_times
     
-    def make_click_track(self, audio_path, output_path='output.wav'):
-        beats = self.predict(audio_path)
-        bigaudio, _ = librosa.load(audio_path, sr=44100)
-        click_track = librosa.clicks(times=beats, sr=44100, length=len(bigaudio))
-        audio_with_clicks = np.array([click_track, bigaudio])
+    def make_click_track(self, audio_path, output_path='output.wav', beats=None, clean=True):
+        if not beats:
+            beats = self.predict(audio_path, clean=clean)
+        audio, _ = librosa.load(audio_path, sr=44100)
+        click_track = librosa.clicks(times=beats, sr=44100, length=len(audio))
+        audio_with_clicks = np.array([click_track, audio])
 
-        # Ensure the audio is in the correct format for saving (transpose if necessary)
-        audio_with_clicks = np.vstack([click_track, bigaudio]).T
+        audio_with_clicks = np.vstack([click_track, audio]).T
 
-        # Save the audio file
         sf.write(output_path, audio_with_clicks, 44100)

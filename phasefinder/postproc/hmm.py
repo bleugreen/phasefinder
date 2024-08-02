@@ -1,9 +1,9 @@
 import torch
 
-def hmm_beat_estimation(phase_prediction, bpm, bpm_confidence, frame_rate, device='cpu'):
+def hmm_beat_estimation(phase_prediction, bpm, frame_rate, bpm_confidence=0.9, distance_threshold_factor=0.2, device='cpu'):
     num_states = phase_prediction.shape[1]
     seq_len = phase_prediction.shape[0]
-    transition_probs = calculate_transition_probs(num_states, bpm, frame_rate, bpm_confidence, device)
+    transition_probs = calculate_transition_probs(num_states, bpm, frame_rate, bpm_confidence, distance_threshold_factor, device)
     emission_probs = phase_prediction.to(device)
     viterbi_probs = torch.zeros((seq_len, num_states), device=device)
     backpointers = torch.zeros((seq_len, num_states), dtype=torch.long, device=device)
@@ -16,7 +16,7 @@ def hmm_beat_estimation(phase_prediction, bpm, bpm_confidence, frame_rate, devic
     beat_positions = backtrack(backpointers)
     return beat_positions
 
-def calculate_transition_probs(num_states, bpm, frame_rate, bpm_confidence, device='cpu'):
+def calculate_transition_probs(num_states, bpm, frame_rate, bpm_confidence, distance_threshold_factor, device='cpu'):
     frames_per_beat = frame_rate * 60 / bpm
     phase_change_per_frame = 360 / frames_per_beat
     i = torch.arange(num_states, device=device).float() * (360 / num_states)
@@ -24,7 +24,7 @@ def calculate_transition_probs(num_states, bpm, frame_rate, bpm_confidence, devi
     expected_phase_diff = (i.unsqueeze(1) + phase_change_per_frame) % 360 - j.unsqueeze(0)
     expected_phase_diff = torch.min(abs(expected_phase_diff), 360 - abs(expected_phase_diff))
     
-    distance_threshold = phase_change_per_frame * 0.1
+    distance_threshold = phase_change_per_frame * distance_threshold_factor
     transition_probs = torch.where(expected_phase_diff <= distance_threshold, 1.0 - (expected_phase_diff / distance_threshold), torch.tensor(1e-10, device=device))
     
     uniform_probs = torch.ones_like(transition_probs) / num_states
