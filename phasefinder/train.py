@@ -58,7 +58,7 @@ else:
     )
 
 if(args.load_weights):
-    model.load_state_dict(torch.load(args.load_weights))
+    model.load_state_dict(torch.load(args.load_weights, weights_only=True), strict=False)
 
 model = model.cuda()
 optimizer = optim.Adam(model.parameters(), lr=LR)

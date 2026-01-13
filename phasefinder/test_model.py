@@ -7,7 +7,7 @@ def main(modelname):
     datapath = '../stft_db_b_phase_cleaned.h5'
 
     beat_model = PhasefinderModelNoattn().cuda()
-    beat_model.load_state_dict(torch.load(modelname, map_location=torch.device('cuda')))
+    beat_model.load_state_dict(torch.load(modelname, map_location=torch.device('cuda'), weights_only=True), strict=False)
     beat_model.eval()
 
     test_model_f_measure(beat_model, datapath)

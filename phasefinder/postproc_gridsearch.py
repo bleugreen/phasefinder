@@ -19,7 +19,7 @@ def main(modelname, bpm_confidence=1.0, distance_threshold_factor=0.1, clean_bea
     datapath = '../stft_db_b_phase_cleaned.h5'
 
     beat_model = PhasefinderModelNoattn().cuda()
-    beat_model.load_state_dict(torch.load(modelname, map_location=torch.device('cuda')))
+    beat_model.load_state_dict(torch.load(modelname, map_location=torch.device('cuda'), weights_only=True), strict=False)
     beat_model.eval()
 
     dataset = BeatDataset(datapath, 'test', mode='beat', items=['stft', 'time', 'bpm'], device='cuda')
