@@ -22,7 +22,7 @@ def calculate_transition_probs(num_states, bpm, frame_rate, bpm_confidence, dist
     i = torch.arange(num_states, device=device).float() * (360 / num_states)
     j = torch.arange(num_states, device=device).float() * (360 / num_states)
     expected_phase_diff = (i.unsqueeze(1) + phase_change_per_frame) % 360 - j.unsqueeze(0)
-    expected_phase_diff = torch.min(abs(expected_phase_diff), 360 - abs(expected_phase_diff))
+    expected_phase_diff = torch.min(torch.abs(expected_phase_diff), 360 - torch.abs(expected_phase_diff))
     
     distance_threshold = phase_change_per_frame * distance_threshold_factor
     transition_probs = torch.where(expected_phase_diff <= distance_threshold, 1.0 - (expected_phase_diff / distance_threshold), torch.tensor(1e-10, device=device))

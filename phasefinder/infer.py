@@ -29,7 +29,6 @@ if __name__ == '__main__':
     if args.format == 'click_track':
         audio, sr = librosa.load(audio_path)
         click_track = librosa.clicks(times=beat_times, sr=sr, length=len(audio))
-        audio_with_clicks = np.array([click_track, audio])
         audio_with_clicks = np.vstack([click_track, audio]).T
         sf.write(args.audio_output, audio_with_clicks, sr)
     else:
