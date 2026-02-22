@@ -10,17 +10,9 @@ from deeprhythm import DeepRhythmPredictor
 from nnAudio.features import STFT
 
 from phasefinder.audio.log_filter import apply_log_filter, create_log_filter
-from phasefinder.constants import (
-    BEAT_ONSET_THRESHOLD,
-    CLICK_SAMPLE_RATE,
-    FRAME_RATE,
-    HOP,
-    N_FFT,
-    SAMPLE_RATE,
-)
+from phasefinder.constants import CLICK_SAMPLE_RATE, HOP, N_FFT, SAMPLE_RATE
 from phasefinder.model import PhasefinderModelAttn, PhasefinderModelNoattn
-from phasefinder.postproc.cleaner import clean_beats
-from phasefinder.postproc.hmm import hmm_beat_estimation
+from phasefinder.postproc import extract_beat_times
 from phasefinder.utils import get_device, get_weights
 
 
@@ -79,21 +71,13 @@ class Phasefinder:
 
         phase_preds = self.model(song_spec)
 
-        res = hmm_beat_estimation(
+        pred_beat_times = extract_beat_times(
             phase_preds[0, :, :].squeeze(0).to(self.device),
             bpm,
             bpm_confidence=confidence,
-            frame_rate=FRAME_RATE,
+            clean=clean,
             device=self.device,
         )
-        bt = torch.tensor(res)
-
-        pred_beat_label_onset = torch.abs(bt[1:] - bt[:-1])
-        beat_frames = torch.tensor([i for i, x in enumerate(pred_beat_label_onset) if x > BEAT_ONSET_THRESHOLD])
-
-        pred_beat_times = (beat_frames * HOP / SAMPLE_RATE).numpy()
-        if clean:
-            pred_beat_times = clean_beats(pred_beat_times)
 
         if include_bpm:
             return pred_beat_times, bpm
