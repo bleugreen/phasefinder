@@ -19,7 +19,7 @@ classifiers = [
 dependencies = [
     "numpy<2.0.0",
     "torch",
-   "pytorch-tcn",
+    "pytorch-tcn",
     "h5py",
     "librosa",
     "nnAudio",
@@ -27,10 +27,23 @@ dependencies = [
     "soundfile",
     "deeprhythm",
     "tqdm",
-    "librosa",
-    "mir_eval"
+    "mir_eval",
 ]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
 
 [project.urls]
 Homepage = "https://github.com/bleugreen/phasefinder"
 Issues = "https://github.com/bleugreen/phasefinder/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]

@@ -8,5 +8,4 @@ torchaudio
 soundfile
 deeprhythm
 tqdm
-librosa
 mir_eval
