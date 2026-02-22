@@ -1,0 +1,6 @@
+SAMPLE_RATE = 22050
+N_FFT = 2048
+HOP = 512
+FRAME_RATE = SAMPLE_RATE / HOP  # ~43.066 frames/sec
+BEAT_ONSET_THRESHOLD = 300
+CLICK_SAMPLE_RATE = 44100  # higher rate for output audio quality

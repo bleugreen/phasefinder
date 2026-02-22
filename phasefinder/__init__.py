@@ -1,4 +1,5 @@
-from .predictor import Phasefinder
+from .predictor import Phasefinder as Phasefinder
+
 
 def version_info():
     return {
@@ -6,5 +7,5 @@ def version_info():
         "version": "0.0.2",
         "description": "A beat estimation model that predicts metric position as rotational phase.",
         "author": "bleugreen",
-        "license": "AGPL-3.0"
+        "license": "AGPL-3.0",
     }

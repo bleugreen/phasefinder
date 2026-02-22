@@ -1,10 +1,11 @@
-
 import os
+
 import requests
 
-model_url = 'https://github.com/bleugreen/phasefinder/raw/main/'
+model_url = "https://github.com/bleugreen/phasefinder/raw/main/"
 
-def get_weights(filename="phasefinder-0.1-noattn.pt", quiet=False):
+
+def get_weights(filename: str = "phasefinder-0.1-noattn.pt", quiet: bool = False) -> str:
     # Construct the path to save the model weights
     home_dir = os.path.expanduser("~")
     model_dir = os.path.join(home_dir, ".local", "share", "phasefinder")
@@ -20,9 +21,9 @@ def get_weights(filename="phasefinder-0.1-noattn.pt", quiet=False):
         print("Downloading model weights...")
         # Download the model weights
         try:
-            r = requests.get(model_url+filename, allow_redirects=True)
+            r = requests.get(model_url + filename, allow_redirects=True)
             if r.status_code == 200:
-                with open(model_path, 'wb') as f:
+                with open(model_path, "wb") as f:
                     f.write(r.content)
                 print("Model weights downloaded successfully.")
             else:
