@@ -1,11 +1,16 @@
 """Test that Phasefinder model weights load without errors."""
 
+import pytest
+
 
 def test_phasefinder_init():
     """Verify Phasefinder initializes and loads weights without RuntimeError."""
     from phasefinder import Phasefinder
 
-    pf = Phasefinder(quiet=True)
+    try:
+        pf = Phasefinder(quiet=True)
+    except FileNotFoundError:
+        pytest.skip("Model weights not available")
     assert pf.device is not None
     assert pf.model is not None
 
