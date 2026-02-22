@@ -24,12 +24,22 @@ def clean_beats(
     cleaned_beats = _clean_beat_times(beat_times, clean_beats_threshold, mode_threshold)
     if len(cleaned_beats) < 3:
         corrected_beats = _correct_beat_sequence(
-            beat_times, overlap_threshold, early_threshold, late_threshold, missed_threshold, nudge_amount,
+            beat_times,
+            overlap_threshold,
+            early_threshold,
+            late_threshold,
+            missed_threshold,
+            nudge_amount,
             mode_threshold,
         )
     else:
         corrected_beats = _correct_beat_sequence(
-            cleaned_beats, overlap_threshold, early_threshold, late_threshold, missed_threshold, nudge_amount,
+            cleaned_beats,
+            overlap_threshold,
+            early_threshold,
+            late_threshold,
+            missed_threshold,
+            nudge_amount,
             mode_threshold,
         )
     return np.array(corrected_beats)
@@ -51,7 +61,12 @@ def _clean_beat_times(beat_times, threshold, mode_threshold=MODE_THRESHOLD):
 
 
 def _correct_beat_sequence(
-    beat_times, overlap_threshold, early_beat_threshold, late_beat_threshold, missed_beat_threshold, nudge_amount,
+    beat_times,
+    overlap_threshold,
+    early_beat_threshold,
+    late_beat_threshold,
+    missed_beat_threshold,
+    nudge_amount,
     mode_threshold,
 ):
     median_interval = find_interval_mode(

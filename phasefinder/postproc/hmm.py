@@ -13,8 +13,9 @@ def hmm_beat_estimation(
 ) -> list[int]:
     num_states = phase_prediction.shape[1]
     seq_len = phase_prediction.shape[0]
-    transition_probs = calculate_transition_probs(num_states, bpm, frame_rate, bpm_confidence,
-                                                  distance_threshold_factor, device)
+    transition_probs = calculate_transition_probs(
+        num_states, bpm, frame_rate, bpm_confidence, distance_threshold_factor, device
+    )
     emission_probs = phase_prediction.to(device)
     viterbi_probs = torch.zeros((seq_len, num_states), device=device)
     backpointers = torch.zeros((seq_len, num_states), dtype=torch.long, device=device)

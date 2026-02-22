@@ -1,7 +1,6 @@
 """Test that Phasefinder model weights load without errors."""
 
 
-
 def test_phasefinder_init():
     """Verify Phasefinder initializes and loads weights without RuntimeError."""
     from phasefinder import Phasefinder

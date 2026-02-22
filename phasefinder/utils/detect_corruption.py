@@ -17,27 +17,29 @@ def compute_noise_features(stft):
 
     return spectral_flatness, high_freq_ratio
 
+
 def detect_noisy_tracks(file_path, group, flatness_threshold=0.9985, high_freq_threshold=0.275):
-    with h5py.File(file_path, 'r') as file:
+    with h5py.File(file_path, "r") as file:
         noisy_tracks = []
         for track in tqdm(file[group].keys(), desc=f"Analyzing {group}"):
-            stft = file[group][track]['stft'][:]
+            stft = file[group][track]["stft"][:]
             flatness, high_freq_ratio = compute_noise_features(stft)
             if flatness > flatness_threshold and high_freq_ratio > high_freq_threshold:
                 noisy_tracks.append(track)
     return noisy_tracks
 
+
 def remove_noisy_tracks(file_path, flatness_threshold=0.9985, high_freq_threshold=0.275):
-    with h5py.File(file_path, 'a') as h5_file:
+    with h5py.File(file_path, "a") as h5_file:
         # Identify noisy tracks in all groups
         noisy_tracks = {}
-        for group in ['train', 'test', 'val']:
+        for group in ["train", "test", "val"]:
             if group in h5_file:
                 noisy_tracks[group] = detect_noisy_tracks(file_path, group, flatness_threshold, high_freq_threshold)
                 print(f"Detected {len(noisy_tracks[group])} noisy tracks in {group} group")
 
         # Delete noisy tracks
-        for group in ['train', 'test', 'val']:
+        for group in ["train", "test", "val"]:
             if group in h5_file:
                 group_noisy = set(noisy_tracks[group])
                 group_ref = h5_file[group]
@@ -50,13 +52,13 @@ def remove_noisy_tracks(file_path, flatness_threshold=0.9985, high_freq_threshol
 
 # Verify the cleaning process
 def count_tracks(file_path):
-    with h5py.File(file_path, 'r') as f:
-        return {group: len(f[group]) for group in ['train', 'test', 'val'] if group in f}
+    with h5py.File(file_path, "r") as f:
+        return {group: len(f[group]) for group in ["train", "test", "val"] if group in f}
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Example usage
-    file_path = 'stft_db_b_phase.hdf5'
+    file_path = "stft_db_b_phase.hdf5"
     print(r"\Original dataset:")
     print(count_tracks(file_path))
 

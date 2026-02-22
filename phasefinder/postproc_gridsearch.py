@@ -17,13 +17,24 @@ from phasefinder.postproc.cleaner import clean_beats
 from phasefinder.postproc.hmm import hmm_beat_estimation
 
 
-def main(modelname, bpm_confidence=1.0, distance_threshold_factor=0.1, clean_beats_threshold=0.001,
-         overlap_threshold=0.3, early_beat_threshold=0.7, late_beat_threshold=1.3, missed_beat_threshold=1.7,
-         mode_threshold=0.001, nudge_amount=0.5):
+def main(
+    modelname,
+    bpm_confidence=1.0,
+    distance_threshold_factor=0.1,
+    clean_beats_threshold=0.001,
+    overlap_threshold=0.3,
+    early_beat_threshold=0.7,
+    late_beat_threshold=1.3,
+    missed_beat_threshold=1.7,
+    mode_threshold=0.001,
+    nudge_amount=0.5,
+):
     datapath = "../stft_db_b_phase_cleaned.h5"
 
     beat_model = PhasefinderModelNoattn().cuda()
-    beat_model.load_state_dict(torch.load(modelname, map_location=torch.device("cuda"), weights_only=True), strict=False)
+    beat_model.load_state_dict(
+        torch.load(modelname, map_location=torch.device("cuda"), weights_only=True), strict=False
+    )
     beat_model.eval()
 
     dataset = BeatDataset(datapath, "test", mode="beat", items=["stft", "time", "bpm"], device="cuda")
@@ -40,7 +51,9 @@ def main(modelname, bpm_confidence=1.0, distance_threshold_factor=0.1, clean_bea
 
             frame_rate = 22050.0 / 512
             res = hmm_beat_estimation(
-                phase_preds[0][0].to("cuda"), bpm.item(), frame_rate,
+                phase_preds[0][0].to("cuda"),
+                bpm.item(),
+                frame_rate,
                 bpm_confidence=bpm_confidence,
                 distance_threshold_factor=distance_threshold_factor,
                 device="cuda",
@@ -114,11 +127,19 @@ def grid_search(input_csv=None):
     nudge_amounts = [0.45, 0.5, 0.55]
 
     # Generate all combinations of parameters
-    param_combinations = list(itertools.product(
-        bpm_confidences, distance_threshold_factors, clean_beats_thresholds,
-        overlap_thresholds, early_beat_thresholds, late_beat_thresholds,
-        missed_beat_thresholds, mode_thresholds, nudge_amounts,
-    ))
+    param_combinations = list(
+        itertools.product(
+            bpm_confidences,
+            distance_threshold_factors,
+            clean_beats_thresholds,
+            overlap_thresholds,
+            early_beat_thresholds,
+            late_beat_thresholds,
+            missed_beat_thresholds,
+            mode_thresholds,
+            nudge_amounts,
+        )
+    )
 
     # If input CSV is provided, read existing results
     if input_csv:
@@ -134,11 +155,22 @@ def grid_search(input_csv=None):
         # Write header to the CSV file if it's a new file
         with open(results_filename, "w", newline="") as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow([
-                "bpm_confidence", "distance_threshold_factor", "clean_beats_threshold",
-                "overlap_threshold", "early_beat_threshold", "late_beat_threshold",
-                "missed_beat_threshold", "mode_threshold", "nudge_amount", "f_measure", "cmlt", "amlt",
-            ])
+            writer.writerow(
+                [
+                    "bpm_confidence",
+                    "distance_threshold_factor",
+                    "clean_beats_threshold",
+                    "overlap_threshold",
+                    "early_beat_threshold",
+                    "late_beat_threshold",
+                    "missed_beat_threshold",
+                    "mode_threshold",
+                    "nudge_amount",
+                    "f_measure",
+                    "cmlt",
+                    "amlt",
+                ]
+            )
     random.shuffle(param_combinations)
     print(f"num combos = {len(param_combinations)}")
     for params in param_combinations:
