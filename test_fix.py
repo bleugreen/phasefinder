@@ -6,12 +6,12 @@ This reproduces the issue reported by the user.
 
 try:
     from phasefinder import Phasefinder
-    
+
     print("Testing Phasefinder initialization...")
     pf = Phasefinder(quiet=True)
     print("✓ Success! Phasefinder initialized without RuntimeError")
     print(f"✓ Model loaded on device: {pf.device}")
-    
+
 except RuntimeError as e:
     if "Missing key(s) in state_dict" in str(e):
         print("✗ FAILED: RuntimeError still occurring")

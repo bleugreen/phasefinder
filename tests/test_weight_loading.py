@@ -1,6 +1,5 @@
 """Test that Phasefinder model weights load without errors."""
 
-import pytest
 
 
 def test_phasefinder_init():

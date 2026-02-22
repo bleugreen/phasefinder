@@ -1,5 +1,6 @@
 import torch.nn as nn
 
+
 class BeatPhaseDecoder(nn.Module):
     def __init__(self, num_tcn_outputs, num_classes):
         super(BeatPhaseDecoder, self).__init__()

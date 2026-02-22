@@ -1,9 +1,8 @@
+import os
 from typing import Tuple
 
 import librosa
 import mir_eval
-import numpy as np
-import os
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm

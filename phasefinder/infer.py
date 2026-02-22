@@ -1,9 +1,10 @@
 
+import argparse
+import json
+
 import librosa
 import numpy as np
 import soundfile as sf
-import argparse
-import json
 
 from phasefinder.predictor import Phasefinder
 

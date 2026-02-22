@@ -1,7 +1,7 @@
+import argparse
 import json
 import os
 
-import argparse
 import torch
 from torch import nn, optim
 from torch.optim.lr_scheduler import LambdaLR
